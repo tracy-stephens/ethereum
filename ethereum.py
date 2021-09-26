@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+import pandas as pd
 
 URI = "https://mainnet.infura.io/v3/7aef3f0cd1f64408b163814b22cc643c"
 DATA_DIR = "data"
@@ -10,7 +11,10 @@ def get_block_range_for_date(dt, uri=URI):
 
     command_str = f"ethereumetl get_block_range_for_date --provider-uri {uri} --date {dt}"
     p = subprocess.Popen(["exec " + command_str], stdout=subprocess.PIPE, shell=True)
-    res = p.stdout.read().decode().replace("\n", "")
+    try:
+        res = p.stdout.read().decode().replace("\n", "") # can only run this once
+    except ValueError:
+        print("Check ethereum-etl installation.")
     p.kill()
 
     start_block, end_block = tuple(res.split(","))
@@ -215,42 +219,105 @@ def export_tokens(
 
 class EthereumData():
 
-    def __init__(self, start_date, end_date, data_dir=DATA_DIR):
+    def __init__(
+        self,
+        start_date=None,
+        end_date=None,
+        start_block=None,
+        end_block=None,
+        save_path=r'data/test'
+    ):
 
-        self.start_date = start_date
-        self.end_date = end_date
-        self.data_dir = DATA_DIR
+        if (start_block or start_block == 0) and end_block:
 
-    def update(self):
+            self.start_block = start_block
+            self.end_block = end_block
+            self.start_date = None
+            self.end_date = None
 
-        self.start_block, self.end_block = get_block_range(
-            self.start_block, self.end_block
-        )
+        elif start_date and end_date:
+
+            self.start_date = start_date
+            self.end_date = end_date
+            self.start_block = None
+            self.end_block = None
+
+        else:
+            raise ValueError('No start & end dates or blocks')
+
+        self.save_path = save_path
+
+    @property
+    def file_paths(self):
+        files = [
+            "blocks",
+            "transactions",
+            "contracts",
+            "logs",
+            "receipts",
+            "token_transfers",
+            "tokens"
+        ]
+        ending = f"_{self.start_block}_{self.end_block}.csv"
+        return {k : os.path.join(self.save_path, k + ending) for k in files}
+
+    def load_from_files(self, skip=[]):
+        for k, v in self.file_paths.items():
+            if k not in skip:
+                print(f"Loading {k}...")
+                df = pd.read_csv(v)
+                setattr(self, k, df)
+
+    def update(self, skip=[]):
+
+        exists = os.path.exists(self.save_path)
+
+        if not exists:
+            os.makedirs(self.save_path)
+        if not self.end_block:
+            self.start_block, self.end_block = get_block_range(
+                self.start_date, self.end_date
+            )
 
         st = self.start_block
         ed = self.end_block
 
-        export_blocks_and_transactions(st, ed)
-        export_receipts_and_logs(st, ed)
-        extract_token_transfers(st, ed)
-        export_contracts(st, ed)
-        export_tokens(st, ed)
+        export_blocks_and_transactions(st, ed, data_dir=self.save_path)
+        export_receipts_and_logs(st, ed, data_dir=self.save_path)
+        extract_token_transfers(st, ed, data_dir=self.save_path)
+        export_contracts(st, ed, data_dir=self.save_path)
+        export_tokens(st, ed, data_dir=self.save_path)
 
+        self.load_from_files(skip=skip)
+
+    def load(self, skip=[]):
+
+        exists = os.path.exists(self.save_path)
+
+        if not exists:
+            os.makedirs(self.save_path)
+            self.update()
+
+        self.load_from_files(skip=skip)
 
 
 if __name__ == "__main__":
 
-    st, ed = get_block_range("2021-01-03", "2021-01-03")
-    # st = 100000
-    # ed = 100200
+    dt = "2021-01-03"
+    # test = EthereumData(
+    #     start_block=11578165, end_block=11584640, save_path=r'data/2021-01-03'
+    # )
+    test = EthereumData(
+        start_date=dt, end_date=dt, save_path=r'data/test_again'
+    )
+    test.update()
 
-    export_blocks_and_transactions(st, ed)
-    export_receipts_and_logs(st, ed)
-    extract_token_transfers(st, ed)
-    export_contracts(st, ed)
-    export_tokens(st, ed)
-
-    # os.system(test)
-
-    #res = subprocess.run(["echo " + test], stdout=subprocess.PIPE, shell=True)
-    #print(res.stdout)
+    # st, ed = get_block_range("2021-01-03", "2021-01-03")
+    # # st = 100000
+    # # ed = 100200
+    #
+    # # export_blocks_and_transactions(st, ed)
+    # # export_receipts_and_logs(st, ed)
+    # # extract_token_transfers(st, ed)
+    # # export_contracts(st, ed)
+    # export_tokens(st, ed)
