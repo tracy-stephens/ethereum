@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import glob
 
+
 from columns import COLUMNS
 
 URI = "https://mainnet.infura.io/v3/7aef3f0cd1f64408b163814b22cc643c"
@@ -396,6 +397,7 @@ if __name__ == "__main__":
     )
     test.load()
     test.clean()
+    #test.update()
 
     # st, ed = get_block_range("2021-01-03", "2021-01-03")
     # # st = 100000
