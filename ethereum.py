@@ -4,6 +4,8 @@ import time
 import pandas as pd
 import glob
 
+from columns import COLUMNS
+
 URI = "https://mainnet.infura.io/v3/7aef3f0cd1f64408b163814b22cc643c"
 DATA_DIR = "data"
 
@@ -309,17 +311,91 @@ class EthereumData():
 
         self.load_from_files(skip=skip)
 
+    def clean(self):
+
+        data = {
+            'blocks': self.blocks[COLUMNS['blocks']],
+            'transactions': self.transactions[COLUMNS['transactions']],
+            'contracts': self.contracts[COLUMNS['contracts']],
+            'logs': self.logs[COLUMNS['logs']],
+            'receipts': self.receipts[COLUMNS['receipts']],
+            'token_transfers': self.token_transfers[COLUMNS['token_transfers']],
+            'tokens': self.tokens[COLUMNS['tokens']]
+        }
+
+        # readible date column for blocks
+        df = data['blocks']
+        df = df.assign(datetime=pd.to_datetime(df['timestamp'], unit='s').values)
+        df.drop('timestamp', axis=1, inplace=True)
+        data['blocks'] = df
+
+        clean_transactions = data['transactions']
+        # merge with receipts
+        clean_transactions = pd.merge(
+            left=clean_transactions,
+            right=data['receipts'],
+            left_on=[
+                'hash',
+                'block_number'
+            ],
+            right_on=[
+                'transaction_hash',
+                'block_number'
+            ]
+        )
+
+        # merge with transfers
+        clean_transactions = pd.merge(
+            left=clean_transactions,
+            right=data['token_transfers'],
+            how='left',
+            left_on='hash',
+            right_on='transaction_hash',
+            suffixes=("", "_transfer")
+        )
+
+        # merge with contracts
+        clean_transactions = pd.merge(
+            left=clean_transactions,
+            right=data["contracts"],
+            how='left',
+            left_on='to_address',
+            right_on='address',
+            suffixes=('', '_to_contract')
+        )
+        clean_transactions = pd.merge(
+            left=clean_transactions,
+            right=data["contracts"],
+            how='left',
+            left_on='from_address',
+            right_on='address',
+            suffixes=('', '_from_contract')
+        )
+
+        # merge with blocks
+        clean_transactions = pd.merge(
+            left=clean_transactions,
+            right=data['blocks'],
+            how='left',
+            left_on='block_number',
+            right_on='number',
+            suffixes=('', '_block')
+        )
+
+        return clean_transactions
+
 
 if __name__ == "__main__":
 
-    dt = "2021-01-03"
+    dt = "2021-09-01"
     # test = EthereumData(
     #     start_block=11578165, end_block=11584640, save_path=r'data/2021-01-03'
     # )
     test = EthereumData(
-        start_date=dt, end_date=dt, save_path=r'data/test_again'
+        start_date=dt, end_date=dt, save_path=f'data/{dt}'
     )
-    test.update()
+    test.load()
+    test.clean()
 
     # st, ed = get_block_range("2021-01-03", "2021-01-03")
     # # st = 100000
