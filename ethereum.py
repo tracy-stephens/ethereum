@@ -2,6 +2,7 @@ import os
 import subprocess
 import time
 import pandas as pd
+import glob
 
 URI = "https://mainnet.infura.io/v3/7aef3f0cd1f64408b163814b22cc643c"
 DATA_DIR = "data"
@@ -297,6 +298,14 @@ class EthereumData():
         if not exists:
             os.makedirs(self.save_path)
             self.update()
+        elif not self.end_block:
+            try:
+                blocks_file = glob.glob(f'{self.save_path}/blocks_*.csv')[0]
+                blocks = pd.read_csv(blocks_file)
+                self.start_block = blocks['number'].min()
+                self.end_block = blocks['number'].max()
+            except FileNotFoundError:
+                pass
 
         self.load_from_files(skip=skip)
 
