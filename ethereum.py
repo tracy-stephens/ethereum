@@ -6,6 +6,8 @@ import glob
 
 
 from columns import COLUMNS
+from utils import latest, timestamp_to_datetime
+
 
 URI = "https://mainnet.infura.io/v3/7aef3f0cd1f64408b163814b22cc643c"
 DATA_DIR = "data"
@@ -325,10 +327,7 @@ class EthereumData():
         }
 
         # readible date column for blocks
-        df = data['blocks']
-        df = df.assign(datetime=pd.to_datetime(df['timestamp'], unit='s').values)
-        df.drop('timestamp', axis=1, inplace=True)
-        data['blocks'] = df
+        data['blocks'] = timestamp_to_datetime(data['blocks'])
 
         clean_transactions = data['transactions']
         # merge with receipts
@@ -384,6 +383,17 @@ class EthereumData():
         )
 
         return clean_transactions
+
+    def point_in_time_blocks(self, lag=60):
+
+        df = timestamp_to_datetime(self.blocks).sort_values(by='number')
+        df['lag_cutoff'] = df['datetime'] - pd.offsets.DateOffset(seconds=lag)
+        df['latest_avail_block'] = latest(df, 'number', 'datetime', 'lag_cutoff')
+        df = df[[
+            'number', 'datetime', 'lag_cutoff', 'latest_avail_block'
+        ]].set_index('number').sort_index()
+
+        return df
 
 
 if __name__ == "__main__":
