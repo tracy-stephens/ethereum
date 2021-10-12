@@ -7,4 +7,5 @@ if __name__ == "__main__":
         start_date=sample_dt, end_date=sample_dt, save_path=f"data/{sample_dt}"
     )
 
-    sample.update()
+    #sample.update()
+    sample.load()
