@@ -43,3 +43,32 @@ def add_latest_avail_block(df, pit, block_number_col='block_number'):
         right_index=True
     )
     return res
+
+
+def lagged_block_data(input_df, pit):
+
+    df = input_df.copy()
+    if df.index.name in ['number', 'block_number']:
+        df = df.reset_index()
+
+    if 'number' not in df.columns:
+        df.columns = ['number' if i == 'block_number' else i for i in df.columns]
+
+    # add 'latest_avail_block' column
+    df = add_latest_avail_block(
+        df,  # need to reset_index if the index is block_number
+        pit,
+        block_number_col='number'  # column name of the block_number column
+    ).set_index('number')
+
+    df = pd.merge(
+        left=df,
+        right=df,
+        how='left',
+        left_on='latest_avail_block',
+        right_index=True,
+        suffixes=('', '_lagged'),
+        sort=True
+    ).sort_index().filter(like='_lagged')
+
+    return df.drop(columns='latest_avail_block_lagged')
