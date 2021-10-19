@@ -72,3 +72,15 @@ def lagged_block_data(input_df, pit):
     ).sort_index().filter(like='_lagged')
 
     return df.drop(columns='latest_avail_block_lagged')
+
+
+def get_pit_blocks(blocks_df, lag):
+    
+    df = timestamp_to_datetime(blocks_df).sort_values(by='number')
+    df['lag_cutoff'] = df['datetime'] - pd.offsets.DateOffset(seconds=lag)
+    df['latest_avail_block'] = latest(df, 'number', 'datetime', 'lag_cutoff')
+    df = df[[
+        'number', 'datetime', 'lag_cutoff', 'latest_avail_block'
+    ]].set_index('number').sort_index()
+
+    return df
