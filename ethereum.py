@@ -289,10 +289,15 @@ class EthereumData():
         ed = self.end_block
 
         export_blocks_and_transactions(st, ed, data_dir=self.save_path)
+        time.sleep(5)
         export_receipts_and_logs(st, ed, data_dir=self.save_path)
+        time.sleep(5)
         extract_token_transfers(st, ed, data_dir=self.save_path)
+        time.sleep(5)
         export_contracts(st, ed, data_dir=self.save_path)
+        time.sleep(5)
         export_tokens(st, ed, data_dir=self.save_path)
+        time.sleep(5)
 
         self.load_from_files(skip=skip)
 
