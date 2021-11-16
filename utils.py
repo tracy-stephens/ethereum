@@ -84,3 +84,14 @@ def get_pit_blocks(blocks_df, lag):
     ]].set_index('number').sort_index()
 
     return df
+
+
+def transaction_id(df, index_col='transaction_index', block_number_col='block_number'):
+    idx_str = df[index_col].astype(str).str.pad(
+        width=6, side='left', fillchar='0'
+    )
+    blk_str = df[block_number_col].astype(str).str.pad(
+        width=12, side='right', fillchar='0'
+    )
+    id_str = blk_str + idx_str
+    return pd.Series(id_str.astype(int), name="transaction_id")
