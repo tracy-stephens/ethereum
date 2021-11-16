@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import sys
 
 
 def latest(input_df, target_col, ref_date_col, limit_date_col):
@@ -95,3 +96,7 @@ def transaction_id(df, index_col='transaction_index', block_number_col='block_nu
     )
     id_str = blk_str + idx_str
     return pd.Series(id_str.astype(int), name="transaction_id")
+
+
+def get_size_gb(object_):
+    return sys.getsizeof(object_) / (1024*1024*1024)
