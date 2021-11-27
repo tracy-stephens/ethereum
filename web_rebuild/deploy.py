@@ -14,7 +14,10 @@ df = pd.read_csv("blocks.csv")
 df2 = pd.read_csv("transactions.csv")
 df_history = st.cache(pd.read_csv)("history.csv")
 
-# data pipeline
+#################
+# data pipeline #
+#################
+
 df2_agg = df2[['block_timestamp', 'receipt_effective_gas_price', 'max_priority_fee_per_gas']].groupby('block_timestamp').agg(['mean', 'count'])
 df2_agg.columns = df2_agg.columns.map('_'.join).str.strip('_')
 df_merge = df.merge(right=df2_agg, how='inner', on='block_timestamp')
@@ -55,64 +58,34 @@ end_weekday = 4
 mask = (df_merge['weekday'] >= start_weekday) & (df_merge['weekday'] <= end_weekday)
 df_merge.loc[mask, 'weekday_dummy'] = 1
 
-#transactions
-transactions_df['max_priority_fee_per_gas'] = transactions_df['max_priority_fee_per_gas'].fillna(0)
+# get only columns needed
+features = ['base_fee_per_gas_pct_chg_last_100_to_5', 
+            'base_fee_per_gas_pct_chg_last_5', 
+            'receipt_effective_gas_price_count_pct_chg_last_100_to_5', 
+            'receipt_effective_gas_price_count_pct_chg_last_5', 
+            'receipt_effective_gas_price_mean_pct_chg_last_100_to_5', 
+            'receipt_effective_gas_price_mean_pct_chg_last_5', 
+            'max_priority_fee_per_gas_mean_pct_chg_last_100_to_5', 
+            'max_priority_fee_per_gas_mean_pct_chg_last_5', 
+            'minute_dummy', 'hour_dummy', 'weekday_dummy'
+            ]
+df_predict = df_merge[features]
 
-# reciepts
-receipts_df.rename(columns={'receipt_cumulative_gas_used': 'cumulative_gas_used',
-                            'receipt_gas_used': 'gas_used',
-                            'receipt_status': 'status',
-                            'receipt_effective_gas_price': 'effective_gas_price'
-                           }, inplace=True)
+# swap out infs (generated during % change step if denominator is 0)
+columns = df_predict.columns
+values = [0.431637, 0.309303, 8.809524, 8.9, 17.677177, 16.710033, 15.495496, 10.24462]
+for i in columns[:8]:
+    df_predict[i].replace(np.inf, values[columns.get_loc(i)], inplace=True)
 
-cols = ['transaction_id', 'block_number', 'cumulative_gas_used',
-    'gas_used', 'status', 'effective_gas_price']
-receipts_df = receipts_df[cols]
-# merge transactions and reciepts
-transactions_receipts_df = transactions_df.merge(receipts_df,
-                                             how='inner',
-                                             left_on=['transaction_id', 'block_number'],
-                                             right_on=['transaction_id', 'block_number'])
+####################
+# make predictions #
+####################
 
-transactions_receipts_df[transactions_receipts_df.gas_price!=transactions_receipts_df.effective_gas_price]
-# Calculate aggregated variables at block level
-transactions_receipts_agg_df = transactions_receipts_df[['block_number', 'gas', 'gas_price', 'gas_used', 'effective_gas_price', 'max_priority_fee_per_gas']]\
-        .groupby('block_number').agg(['min', 'mean', 'count'])
-transactions_receipts_agg_df.columns = transactions_receipts_agg_df.columns.map('_'.join).str.strip('_')
-# Keep only certain columns
-transactions_receipts_agg_df = transactions_receipts_agg_df[['gas_min', 'gas_mean', 'gas_price_min', 'gas_price_mean', 
-                                                            'gas_used_min', 'gas_used_mean', 'effective_gas_price_min',
-                                                             'effective_gas_price_mean', 'effective_gas_price_count',
-                                                            'max_priority_fee_per_gas_min', 'max_priority_fee_per_gas_mean']]
-transactions_receipts_agg_df.rename(columns={'effective_gas_price_count': 'number_transactions_in_block'}, inplace=True)
+predicted = rf.predict(df_predict)
 
-pit_df = pd.read_csv(r'data/pit_60_rob.csv')
-pit_df = pit_df.set_index('number')
-pit_df.rename(columns={'lag_cutoff': 'lag_cutoff_60',
-                       'latest_avail_block': 'latest_avail_60'},
-             inplace=True)
-
-merged_df = pit_df[['lag_cutoff_60', 'latest_avail_60', 'datetime']].merge(blocks_df,
-                        how='inner',
-                        left_index=True,
-                        right_index=True)
-
-pipeline_df = merged_df.merge(transactions_receipts_agg_df,
-                        how='left',
-                        left_index=True,
-                        right_index=True)
-
-# feature engineering
-cols = ['gas_mean', 'gas_price_mean', 'gas_used_mean', 'effective_gas_price_mean', 'number_transactions_in_block', 'max_priority_fee_per_gas_mean']
-for col in cols:
-    # Last 5 blocks
-    transactions_receipts_agg_df[col+'_pct_chg_last_5'] = transactions_receipts_agg_df[col]/transactions_receipts_agg_df[col].shift(5)-1
-    # 25 blocks ago to 5 blocks ago percentage changes
-    transactions_receipts_agg_df[col+'_pct_chg_last_25_to_5'] = transactions_receipts_agg_df[col].shift(5)/transactions_receipts_agg_df[col].shift(25)-1
-    # 50 blocks ago to 5 blocks ago percentage changes
-    transactions_receipts_agg_df[col+'_pct_chg_last_50_to_5'] = transactions_receipts_agg_df[col].shift(5)/transactions_receipts_agg_df[col].shift(50)-1
-    # 100 blocks ago to 5 blocks ago percentage changes
-    transactions_receipts_agg_df[col+'_pct_chg_last_100_to_5'] = transactions_receipts_agg_df[col].shift(5)/transactions_receipts_agg_df[col].shift(100)-1
+###########
+# website #
+###########
 
 # fix streamlit layout
 st.set_page_config(layout='wide')
