@@ -4,10 +4,13 @@
 import pandas as pd
 import numpy as np
 import pickle
+import os
 
-def run():
+def main():
     # load model
-    with open('rf_test_model.pkl', 'rb') as model:
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    rf_test_model = os.path.join(dir_path, 'rf_test_model.pkl')
+    with open(rf_test_model, 'rb') as model:
         rf = pickle.load(model)
 
     # load data
@@ -102,4 +105,4 @@ def run():
     chart.to_csv('chart.csv', index=False)
 
 if __name__ == "__main__":
-    run()
+    main()
