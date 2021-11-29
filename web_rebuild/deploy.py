@@ -58,30 +58,39 @@ end_weekday = 4
 mask = (df_merge['weekday'] >= start_weekday) & (df_merge['weekday'] <= end_weekday)
 df_merge.loc[mask, 'weekday_dummy'] = 1
 
+#rename key columns to match the model's expectations
+df_merge.rename(columns={
+       'receipt_effective_gas_price_count_pct_chg_last_5':'number_transactions_in_block_pct_chg_last_5',
+       'receipt_effective_gas_price_count_pct_chg_last_100_to_5':'number_transactions_in_block_pct_chg_last_100_to_5',
+       'receipt_effective_gas_price_mean_pct_chg_last_5':'effective_gas_price_mean_pct_chg_last_5',
+       'receipt_effective_gas_price_mean_pct_chg_last_100_to_5':'effective_gas_price_mean_pct_chg_last_100_to_5',
+        }, inplace=True)
+
 # get only columns needed
 features = ['base_fee_per_gas_pct_chg_last_100_to_5', 
-            'base_fee_per_gas_pct_chg_last_5', 
-            'receipt_effective_gas_price_count_pct_chg_last_100_to_5', 
-            'receipt_effective_gas_price_count_pct_chg_last_5', 
-            'receipt_effective_gas_price_mean_pct_chg_last_100_to_5', 
-            'receipt_effective_gas_price_mean_pct_chg_last_5', 
+            'base_fee_per_gas_pct_chg_last_5',
+            'number_transactions_in_block_pct_chg_last_100_to_5', 
+            'number_transactions_in_block_pct_chg_last_5',
+            'effective_gas_price_mean_pct_chg_last_100_to_5', 
+            'effective_gas_price_mean_pct_chg_last_5',
             'max_priority_fee_per_gas_mean_pct_chg_last_100_to_5', 
-            'max_priority_fee_per_gas_mean_pct_chg_last_5', 
+            'max_priority_fee_per_gas_mean_pct_chg_last_5',
             'minute_dummy', 'hour_dummy', 'weekday_dummy'
             ]
 df_predict = df_merge[features]
 
-# swap out infs (generated during % change step if denominator is 0)
+# psuedo-winsorize: swap out infs with 95th percentile value (generated during % change step if denominator is 0)
 columns = df_predict.columns
 values = [0.431637, 0.309303, 8.809524, 8.9, 17.677177, 16.710033, 15.495496, 10.24462]
 for i in columns[:8]:
     df_predict[i].replace(np.inf, values[columns.get_loc(i)], inplace=True)
 
-####################
-# make predictions #
-####################
+###############
+# predictions #
+###############
 
 predicted = rf.predict(df_predict)
+
 
 ###########
 # website #
