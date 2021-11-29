@@ -7,15 +7,19 @@ import pickle
 import os
 
 def main():
-    # load model
+    # filepath housekeeping
     dir_path = os.path.dirname(os.path.realpath(__file__))
     rf_test_model = os.path.join(dir_path, 'rf_test_model.pkl')
+    blocks = os.path.join(dir_path, 'blocks.csv')
+    transactions = os.path.join(dir_path, 'transactions.csv')
+
+    # load model
     with open(rf_test_model, 'rb') as model:
         rf = pickle.load(model)
 
     # load data
-    df = pd.read_csv("blocks.csv")
-    df2 = pd.read_csv("transactions.csv")
+    df = pd.read_csv(blocks)
+    df2 = pd.read_csv(transactions)
     #df_history = st.cache(pd.read_csv)("history.csv")
 
     #################
