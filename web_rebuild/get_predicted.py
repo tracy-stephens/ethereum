@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # get stuff
 import pandas as pd
 import numpy as np
