@@ -1,6 +1,8 @@
+#!/home/ubuntu/.local/bin/streamlit
+
 import streamlit as st
 import pandas as pd
-from dashboard.dashboard import (
+from dashboard import (
     clean_dates,
     clean_predicted,
     surge_chart
