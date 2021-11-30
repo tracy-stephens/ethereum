@@ -74,6 +74,12 @@ st.sidebar.markdown('Current ethereum gas price estimators either use simple his
 st.sidebar.markdown('Effector.io applies machine learning to gigabytes and gigabytes of historical transaction-level and block-level smart contracts activity data to accurately predict the current required "tip" to successfully get your transaction added to the next block.')
 st.sidebar.markdown(datetime.now())
 
+# core website content
+surge_color = "red"
+last_pred = str(800000000)
+circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left:200px; 200px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + ' }</style>' + '<div class="circle">' + last_pred + ' gwei</div>'
+
+st.markdown(circle, unsafe_allow_html = True)
 st.plotly_chart(surge_cht)
 
 
