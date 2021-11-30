@@ -1,12 +1,18 @@
 #!/home/ubuntu/.local/bin/streamlit
-
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 import pandas as pd
 from dashboard import (
     clean_dates,
     clean_predicted,
     surge_chart
 )
+from datetime import datetime
+
+# fix streamlit layout
+st.set_page_config(layout='wide')
+
+st_autorefresh(interval=60000)
 
 TZ = "US/Eastern"
     
@@ -21,9 +27,6 @@ data = clean_dates(data, tz=TZ)
 
 # charts
 surge_cht = surge_chart(clean_predicted(data["predicted"]))
-
-# fix streamlit layout
-st.set_page_config(layout='wide')
 
 # fix overhead padding
 padding = 1
@@ -55,11 +58,12 @@ st.markdown(f""" <style>
     unsafe_allow_html=True)
 
 # make sidebar
-st.sidebar.title('Effector.io')
+st.sidebar.title('Ethereum Stoplight')
 st.sidebar.header('Applied Machine Learning')
 st.sidebar.subheader('Ethereum Dashboard & Gas Price Predictions')
 st.sidebar.markdown('Current ethereum gas price estimators either use simple historical price trends or settle for limited available and biased supply-side (miner) data to guess a potentially successful "tip".')
 st.sidebar.markdown('Effector.io applies machine learning to gigabytes and gigabytes of historical transaction-level and block-level smart contracts activity data to accurately predict the current required "tip" to successfully get your transaction added to the next block.')
+st.sidebar.markdown(datetime.now())
 
 st.plotly_chart(surge_cht)
 
