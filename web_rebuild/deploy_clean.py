@@ -43,7 +43,7 @@ padding = 1
 st.markdown(f""" <style>
 
     .reportview-container .main .block-container{{
-        padding-top: {padding}rem;
+        padding-top: 0;
         padding-right: {padding}rem;
         padding-left: {padding}rem;
         padding-bottom: {padding}rem;
@@ -67,14 +67,6 @@ st.markdown(f""" <style>
     """, 
     unsafe_allow_html=True)
 
-# make sidebar
-st.sidebar.title('Ethereum Stoplight')
-st.sidebar.header('Applied Machine Learning')
-st.sidebar.subheader('Ethereum Dashboard & Gas Price Predictions')
-st.sidebar.markdown('Current ethereum gas price estimators either use simple historical price trends or settle for limited available and biased supply-side (miner) data to guess a potentially successful "tip".')
-st.sidebar.markdown('Effector.io applies machine learning to gigabytes and gigabytes of historical transaction-level and block-level smart contracts activity data to accurately predict the current required "tip" to successfully get your transaction added to the next block.')
-st.sidebar.markdown(datetime.now())
-
 # core website content
 last_pred = str(round(data["predicted"].iloc[-1][1]/1000000000))
 low = 'rgba(230,242,231)'
@@ -90,15 +82,33 @@ thresh = thresh_df['Value'].iloc[-1]
 
 if thresh <= 1.5:
     surge_color = low
+    recommendation = "Stoplight is Green: We recommend executing your transaction now, transaction fees are currently low."
 elif thresh > 1.5 and thresh <= 2.0:
     surge_color = med
+    recommendation = "Stoplight is Yellow: Transaction fees are currently slightly higher than normal. You could do better, but if you must execute your transaction, it is not a bad time to do so."
 elif thresh > 2.0:
     surge_color = hi
+    recommendation = "Stoplight is Red: We recommend waiting to execute your transaction, transaction fees are currently high."
 
-circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left:200px; 200px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + '}</style>' + '<div class="circle">' + last_pred + 'B gwei</div>'
+# define stoplight
+circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left: 20px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + '}</style>' + '<div class="circle">' + last_pred + 'B gwei</div>'
 
-st.markdown("**Current predicted gas price:**")
-st.markdown(circle, unsafe_allow_html = True)
-st.plotly_chart(surge_cht)
+# make sidebar
+st.sidebar.title('Ethereum Stoplight')
+#st.sidebar.header('Applied Machine Learning')
+st.sidebar.subheader('Ethereum Transaction Price Estimator')
+st.sidebar.markdown('Current ethereum gas price estimators either use simple historical price trends or settle for limited supply-side (miner) data to guess a potentially successful transaction fee.')
+st.sidebar.markdown('Ethereum Stoplight applies machine learning to gigabytes and gigabytes of historical transaction-level and block-level smart contracts activity data to accurately predict the current required fee to successfully get your transaction added to the next block.')
+
+col1, col2 = st.columns([1,2])
+
+with col1:
+    st.markdown('**Current predicted gas price:**')
+    st.markdown(circle, unsafe_allow_html = True)
+    st.markdown(recommendation)
+
+with col2:
+    st.markdown('**Surge Index**')
+    st.plotly_chart(surge_cht)
 
 
