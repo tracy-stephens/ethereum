@@ -53,6 +53,7 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
         x='Time', 
         y='Value', 
         color='Name', 
+        height=350,
         #title='Surge Index',
         color_discrete_map={
             'Predicted Gas Price' : 'gray',
