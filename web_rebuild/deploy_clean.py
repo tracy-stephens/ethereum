@@ -5,7 +5,8 @@ import pandas as pd
 from dashboard import (
     clean_dates,
     clean_predicted,
-    surge_chart
+    surge_chart,
+    surge_index
 )
 from datetime import datetime
 import time
@@ -75,9 +76,27 @@ st.sidebar.markdown('Effector.io applies machine learning to gigabytes and gigab
 st.sidebar.markdown(datetime.now())
 
 # core website content
-surge_color = "red"
-last_pred = str(800000000)
-circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left:200px; 200px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + ' }</style>' + '<div class="circle">' + last_pred + ' gwei</div>'
+last_pred = str(round(data["predicted"].iloc[-1][1]))
+low = 'rgba(230,242,231)'
+med = 'rgba(255,255,220)'
+hi = 'rgba(255,231,233)'
+
+# get surge color cutoffs
+thresh_df = surge_index(clean_predicted(data["predicted"]))
+thresh_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
+thresh_df = thresh_df.unstack().reset_index()
+thresh_df.columns = ['Name', 'Time', 'Value']
+thresh = thresh_df['Value'].iloc[-1]
+st.sidebar.markdown(thresh_df['Value'].iloc[-1])
+
+if thresh <= 1.5:
+    surge_color = low
+elif thresh > 1.5 and thresh <= 2.0:
+    surge_color = med
+elif thresh > 2.0:
+    surge_color = hi
+
+circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left:200px; 200px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + '}</style>' + '<div class="circle">' + last_pred + ' gwei</div>'
 
 st.markdown(circle, unsafe_allow_html = True)
 st.plotly_chart(surge_cht)
