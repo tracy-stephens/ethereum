@@ -76,7 +76,7 @@ st.sidebar.markdown('Effector.io applies machine learning to gigabytes and gigab
 st.sidebar.markdown(datetime.now())
 
 # core website content
-last_pred = str(round(data["predicted"].iloc[-1][1]))
+last_pred = str(round(data["predicted"].iloc[-1][1]/1000000))
 low = 'rgba(230,242,231)'
 med = 'rgba(255,255,220)'
 hi = 'rgba(255,231,233)'
@@ -86,7 +86,7 @@ thresh_df = surge_index(clean_predicted(data["predicted"]))
 thresh_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
 thresh_df = thresh_df.unstack().reset_index()
 thresh_df.columns = ['Name', 'Time', 'Value']
-thresh = thresh_df['Value'].iloc[-1]/1000000
+thresh = thresh_df['Value'].iloc[-1]
 
 if thresh <= 1.5:
     surge_color = low
