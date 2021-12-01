@@ -95,9 +95,9 @@ elif thresh > 1.5 and thresh <= 2.0:
 elif thresh > 2.0:
     surge_color = hi
 
-circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left:200px; 200px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + '}</style>' + '<div class="circle">' + last_pred + ' gwei</div>'
+circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left:200px; 200px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + '}</style>' + '<div class="circle">' + last_pred + 'B gwei</div>'
 
-st.markdown("**Current predicted gas price (gwei, B):**")
+st.markdown("**Current predicted gas price:**")
 st.markdown(circle, unsafe_allow_html = True)
 st.plotly_chart(surge_cht)
 
