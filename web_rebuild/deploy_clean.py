@@ -62,6 +62,10 @@ st.markdown(f""" <style>
         padding-left: {padding}rem;
         padding-bottom: {padding}rem;
         }}
+    
+    .css-1d391kg {{
+        width: 14rem;
+        }}
 
     </style> 
     """, 
