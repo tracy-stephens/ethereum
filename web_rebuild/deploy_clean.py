@@ -76,7 +76,7 @@ st.sidebar.markdown('Effector.io applies machine learning to gigabytes and gigab
 st.sidebar.markdown(datetime.now())
 
 # core website content
-last_pred = str(round(data["predicted"].iloc[-1][1]/1000000))
+last_pred = str(round(data["predicted"].iloc[-1][1]/1000000000))
 low = 'rgba(230,242,231)'
 med = 'rgba(255,255,220)'
 hi = 'rgba(255,231,233)'
@@ -97,7 +97,7 @@ elif thresh > 2.0:
 
 circle = '<style>.circle {width: 200px; height: 200px; line-height: 200px; margin-left:200px; 200px; border-radius: 50%; font-size: 20px; color: #000; text-align: center; background:' + surge_color + '}</style>' + '<div class="circle">' + last_pred + ' gwei</div>'
 
-st.markdown("**Current predicted gas price (gwei, M):**")
+st.markdown("**Current predicted gas price (gwei, B):**")
 st.markdown(circle, unsafe_allow_html = True)
 st.plotly_chart(surge_cht)
 
