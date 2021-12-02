@@ -6,7 +6,8 @@ from dashboard import (
     clean_dates,
     clean_predicted,
     surge_chart,
-    surge_index
+    surge_index,
+    gas_hist
 )
 from datetime import datetime
 import time
@@ -37,6 +38,7 @@ data = clean_dates(data, tz=TZ)
 
 # charts
 surge_cht = surge_chart(clean_predicted(data["predicted"]))
+current_cht = gas_hist(data["predicted"])
 
 # fix overhead padding
 padding = 1
@@ -47,7 +49,7 @@ st.markdown(f""" <style>
         padding-right: {padding}rem;
         padding-left: {padding}rem;
         padding-bottom: {padding}rem;
-    	}} 
+        }} 
 
     .reportview-container .css-1lcbmhc .css-1d391kg {{
         padding-top: {padding}rem;
@@ -114,5 +116,6 @@ with col1:
 with col2:
     st.markdown('**Surge Index**')
     st.plotly_chart(surge_cht)
+    st.plotly_chart(current_cht)
 
 
