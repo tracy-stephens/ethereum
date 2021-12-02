@@ -95,6 +95,7 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
 def gas_hist(df):
     
     chart_df = df
+    chart_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
     df = chart_df.unstack().reset_index()
     df.columns = ['Name', 'Time', 'Value']
     
