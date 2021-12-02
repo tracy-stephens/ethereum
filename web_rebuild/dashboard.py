@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import plotly_express as px
+#import plotly.figure_factory as ff
 
 
 def clean_dates(data, tz="US/Eastern"):
@@ -87,5 +88,49 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
         'paper_bgcolor': 'rgba(0, 0, 0, 0)',
         'margin_t': 20,
     })
+    
+    return fig
+
+
+def gas_hist(df):
+    
+    chart_df = df
+    df = chart_df.unstack().reset_index()
+    df.columns = ['Name', 'Time', 'Value']
+    
+    fig = px.histogram(
+        df, 
+        x="Value", 
+        color="Name", 
+        opacity=0.1,
+        nbins=30,
+        color_discrete_map={
+            'Predicted Gas Price' : 'green',
+            'Realized Gas Price' : 'blue'
+        },
+        #marginal="violin",
+        title="Current Prediction"
+    )
+    fig.add_vline(
+        x=chart_df[-1:]['Realized Gas Price'][0], 
+        line_dash='dash',
+        line_color='green',
+        annotation_text="Last Block Avg.",
+        annotation_position="bottom right",
+        annotation_font_color="green"
+    )
+    fig.add_vline(
+        x=chart_df[-1:]['Predicted Gas Price'][0], 
+        line_dash='dash', 
+        line_color='blue',
+        annotation_text="+1min Prediction",
+        annotation_position="bottom right",
+        annotation_font_color="blue"
+    )
+    fig.update_layout({
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        #'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+    })
+    fig.update_layout(showlegend=False)
     
     return fig
