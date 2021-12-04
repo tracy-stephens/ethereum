@@ -4,14 +4,14 @@ import plotly_express as px
 #import plotly.figure_factory as ff
 
 
-def clean_dates(data, tz="US/Eastern"):
+def clean_dates(data, tz='US/Eastern'):
     """ data is a dict of dfs with keys blocks, transactions, and predicted """
     
     for k, v in data.items():
         v['block_timestamp'] = pd.to_datetime(v['block_timestamp'])
-        v['block_timestamp'] = v['block_timestamp'].dt.tz_localize("UTC").dt.tz_convert(tz)
+        v['block_timestamp'] = v['block_timestamp'].dt.tz_localize('UTC').dt.tz_convert(tz)
 
-        if k != "transactions":
+        if k != 'transactions':
             v.set_index(v['block_timestamp'], inplace=True)
             v.drop(columns='block_timestamp', inplace=True)
     
@@ -22,11 +22,11 @@ def clean_predicted(df):
     
     preds_df = df.copy().sort_index().resample('s').ffill()
     preds_df = pd.concat([
-        preds_df["receipt_effective_gas_price_mean"],
+        preds_df['receipt_effective_gas_price_mean'],
         pd.Series(
             preds_df['predicted'].values, 
             index=preds_df['predicted'].index + pd.offsets.Minute(),
-            name="predicted"
+            name='predicted'
         )
     ], axis=1)
     
