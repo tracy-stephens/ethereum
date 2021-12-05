@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 import pickle
+import xgboost as xgb
 import os
 
 def main():
@@ -77,8 +78,12 @@ def main():
            'receipt_effective_gas_price_mean_pct_chg_last_100_to_5':'effective_gas_price_mean_pct_chg_last_100_to_5',
             }, inplace=True)
 
+    # one column needs to be renamed without killing the original columns name
+
+    df_merge['latest_avail_gas_price_mean']  = df_merge['receipt_effective_gas_price_mean']
+
     # get only columns needed
-    features = ['receipt_effective_gas_price_mean',
+    features = ['latest_avail_gas_price_mean',
                 'base_fee_per_gas_pct_chg_last_100_to_5', 
                 'base_fee_per_gas_pct_chg_last_5',
                 'number_transactions_in_block_pct_chg_last_100_to_5', 
@@ -103,9 +108,9 @@ def main():
 
     #predicted = rf.predict(df_predict)
     rf_test_predictions = rf.predict(df_predict)
-    xgb_test_pred = xgb.predict(df_predict)
+    xgb_test_pred = xgb.predict(xgboost.DMatrix(df_predict))
     
-    ensemble_test_preds = (rf_test_predictions + 2*xgb_test_pred) / 3
+    ensemble_test_preds = (rf_test_predictions + 2 * xgb_test_pred) / 3
 
     ##################
     # output results #
