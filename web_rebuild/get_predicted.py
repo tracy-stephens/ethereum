@@ -4,18 +4,22 @@
 import pandas as pd
 import numpy as np
 import pickle
+import xgboost
 import os
 
 def main():
     # filepath housekeeping
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    rf_test_model = os.path.join(dir_path, 'rf_test_model.pkl')
+    rf_final_model = os.path.join(dir_path, 'rf_final_model.pkl')
+    xgb_final_model = os.path.join(dir_path, 'xgb_final_model.pkl')
     blocks = os.path.join(dir_path, 'blocks.csv')
     transactions = os.path.join(dir_path, 'transactions.csv')
 
-    # load model
-    with open(rf_test_model, 'rb') as model:
-        rf = pickle.load(model)
+    # load models
+    with open(rf_final_model, 'rb') as rfm:
+        rf = pickle.load(rfm)
+    with open(xgb_final_model, 'rb') as xgbm:
+        xgb = pickle.load(xgbm)
 
     # load data
     df = pd.read_csv(blocks)
@@ -74,8 +78,13 @@ def main():
            'receipt_effective_gas_price_mean_pct_chg_last_100_to_5':'effective_gas_price_mean_pct_chg_last_100_to_5',
             }, inplace=True)
 
+    # one column needs to be renamed without killing the original columns name
+
+    df_merge['latest_avail_gas_price_mean']  = df_merge['receipt_effective_gas_price_mean']
+
     # get only columns needed
-    features = ['base_fee_per_gas_pct_chg_last_100_to_5', 
+    features = ['latest_avail_gas_price_mean',
+                'base_fee_per_gas_pct_chg_last_100_to_5', 
                 'base_fee_per_gas_pct_chg_last_5',
                 'number_transactions_in_block_pct_chg_last_100_to_5', 
                 'number_transactions_in_block_pct_chg_last_5',
@@ -97,14 +106,18 @@ def main():
     # predictions #
     ###############
 
-    predicted = rf.predict(df_predict)
+    #predicted = rf.predict(df_predict)
+    rf_test_predictions = rf.predict(df_predict)
+    xgb_test_pred = xgb.predict(xgboost.DMatrix(df_predict))
+    
+    ensemble_test_preds = (rf_test_predictions + 2 * xgb_test_pred) / 3
 
     ##################
     # output results #
     ##################
 
     chart = df_merge[['block_timestamp','receipt_effective_gas_price_mean']]
-    chart['predicted'] = predicted
+    chart['predicted'] = ensemble_test_preds
     chart.set_index('block_timestamp')
     chart.to_csv('chart.csv', index=False)
 

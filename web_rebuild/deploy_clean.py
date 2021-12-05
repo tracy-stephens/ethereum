@@ -7,7 +7,7 @@ from dashboard import (
     clean_predicted,
     surge_chart,
     surge_index,
-    gas_hist
+    gas_hist,
 )
 from datetime import datetime
 import time
@@ -42,7 +42,7 @@ current_cht = gas_hist(data["predicted"])
 
 # fix overhead padding
 padding = 1
-st.markdown(f""" <style>
+st.markdown(f''' <style>
 
     .reportview-container .main .block-container{{
         padding-top: 0;
@@ -70,17 +70,17 @@ st.markdown(f""" <style>
         }}
 
     </style> 
-    """, 
+    ''', 
     unsafe_allow_html=True)
 
 # core website content
-last_pred = str(round(data["predicted"].iloc[-1][1]/1000000000))
+last_pred = str(round(data['predicted'].iloc[-1][1]/1000000000))
 low = 'rgba(230,242,231)'
 med = 'rgba(255,255,220)'
 hi = 'rgba(255,231,233)'
 
 # get surge color cutoffs
-thresh_df = surge_index(clean_predicted(data["predicted"]))
+thresh_df = surge_index(data['predicted'])
 thresh_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
 thresh_df = thresh_df.unstack().reset_index()
 thresh_df.columns = ['Name', 'Time', 'Value']
