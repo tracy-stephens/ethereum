@@ -78,7 +78,7 @@ def main():
             }, inplace=True)
 
     # get only columns needed
-    features = ['receipt_effective_gas_price',
+    features = ['receipt_effective_gas_price_mean',
                 'base_fee_per_gas_pct_chg_last_100_to_5', 
                 'base_fee_per_gas_pct_chg_last_5',
                 'number_transactions_in_block_pct_chg_last_100_to_5', 
