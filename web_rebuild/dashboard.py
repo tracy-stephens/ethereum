@@ -60,7 +60,12 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
         #title='Surge Index',
         color_discrete_map={
             'Predicted Gas Price' : 'gray',
-            'Realized Gas Price' : 'black'
+            'Realized Gas Price' : 'black',
+        },
+        labels={
+            "Time": "Block (timestamp)",
+            "Value": "Gas Price Surge Multiple",
+            'Name' : ''
         },
         line_dash='Name'
     )
@@ -104,17 +109,19 @@ def gas_hist(df):
     fig = px.histogram(
         df, 
         x="Value", 
-        color="Name", 
+        #color="Name", 
+        height=350,
         opacity=0.1,
         nbins=30,
-        height=500,
-        width=1000,
         color_discrete_map={
             'Predicted Gas Price' : 'green',
             'Realized Gas Price' : 'blue'
         },
+        labels={
+            "Value": "Effective Gas Price",
+        },
         #marginal="violin",
-        title="Current Prediction"
+        #title="Current Prediction"
     )
     fig.add_vline(
         x=chart_df[-1:][('Realized Gas Price', )][0], 
@@ -134,7 +141,8 @@ def gas_hist(df):
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-        #'margin_t': 20
+        'yaxis_title' : "Number of Recent Blocks",
+        'margin_t': 20
     })
     #fig.update_layout(showlegend=False)
     
@@ -149,13 +157,13 @@ def pct_tip_chart(df):
     has_tip_pct = has_tip[True] / (has_tip.sum(1))
     fig = px.area(
         has_tip_pct.rolling(5).mean(), 
-        height=400,
-        width=1000,
-        title='% of Included Transactions With Tip by Block'
+        height=350,
+        #title='% of Included Transactions With Tip by Block'
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
         'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+        'margin_t': 20
     })
     fig.update_layout(showlegend=False)
     return fig
