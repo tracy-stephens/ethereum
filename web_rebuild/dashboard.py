@@ -114,8 +114,8 @@ def gas_hist(df):
         opacity=0.1,
         nbins=30,
         color_discrete_map={
-            'Predicted Gas Price' : 'green',
-            'Realized Gas Price' : 'blue'
+            'Predicted Gas Price' : 'blue',
+            'Realized Gas Price' : 'green'
         },
         labels={
             "Value": "Effective Gas Price",
