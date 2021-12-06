@@ -4,14 +4,14 @@ import plotly_express as px
 #import plotly.figure_factory as ff
 
 
-def clean_dates(data, tz='US/Eastern'):
+def clean_dates(data, tz="US/Eastern"):
     """ data is a dict of dfs with keys blocks, transactions, and predicted """
     
     for k, v in data.items():
         v['block_timestamp'] = pd.to_datetime(v['block_timestamp'])
-        v['block_timestamp'] = v['block_timestamp'].dt.tz_localize('UTC').dt.tz_convert(tz)
+        v['block_timestamp'] = v['block_timestamp'].dt.tz_localize("UTC").dt.tz_convert(tz)
 
-        if k != 'transactions':
+        if k != "transactions":
             v.set_index(v['block_timestamp'], inplace=True)
             v.drop(columns='block_timestamp', inplace=True)
     
@@ -20,13 +20,15 @@ def clean_dates(data, tz='US/Eastern'):
 
 def clean_predicted(df):
     
+    print(df.head())
     preds_df = df.copy().sort_index().resample('s').ffill()
     preds_df = pd.concat([
-        preds_df['receipt_effective_gas_price_mean'],
+        
+        preds_df["receipt_effective_gas_price_mean"],
         pd.Series(
             preds_df['predicted'].values, 
             index=preds_df['predicted'].index + pd.offsets.Minute(),
-            name='predicted'
+            name="predicted"
         )
     ], axis=1)
     
@@ -44,7 +46,7 @@ def surge_index(data, rolling_lookback='24h', quantile=0.25, halflife=15):
 
 def surge_chart(df, stoplight_thresh = [1.5, 2]):
     
-    chart_df = surge_index(df)
+    chart_df = surge_index(df).copy()
     chart_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
     chart_df = chart_df.unstack().reset_index()
     chart_df.columns = ['Name', 'Time', 'Value']
@@ -105,6 +107,8 @@ def gas_hist(df):
         color="Name", 
         opacity=0.1,
         nbins=30,
+        height=500,
+        width=1000,
         color_discrete_map={
             'Predicted Gas Price' : 'green',
             'Realized Gas Price' : 'blue'
@@ -125,13 +129,33 @@ def gas_hist(df):
         line_dash='dash', 
         line_color='blue',
         annotation_text="+1min Prediction",
-        annotation_position="bottom right",
+        annotation_position="top right",
         annotation_font_color="blue"
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-        #'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+        #'margin_t': 20
+    })
+    #fig.update_layout(showlegend=False)
+    
+    return fig
+
+
+def pct_tip_chart(df):
+    has_tip = df.groupby([
+        df["max_priority_fee_per_gas"] == 0, 
+        df["block_timestamp"]
+    ]).count()["max_priority_fee_per_gas"].unstack(0)
+    has_tip_pct = has_tip[True] / (has_tip.sum(1))
+    fig = px.area(
+        has_tip_pct.rolling(5).mean(), 
+        height=400,
+        width=1000,
+        title='% of Included Transactions With Tip by Block'
+    )
+    fig.update_layout({
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        'paper_bgcolor': 'rgba(0, 0, 0, 0)',
     })
     fig.update_layout(showlegend=False)
-    
     return fig
