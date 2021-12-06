@@ -34,7 +34,7 @@ def main():
     df2_agg.columns = df2_agg.columns.map('_'.join).str.strip('_')
     df_merge = df.merge(right=df2_agg, how='inner', on='block_timestamp')
     df_merge = pd.DataFrame(df_merge).sort_values(by='block_timestamp', ascending=True)
-    df_merge = df_merge[-200:] # need 200 to do 100-ago division on last of 100 most recent
+    #df_merge = df_merge[-200:] # need 200 to do 100-ago division on last of 100 most recent
 
     cols = ['base_fee_per_gas', 'receipt_effective_gas_price_count', 'receipt_effective_gas_price_mean', 'max_priority_fee_per_gas_mean']
     for col in cols:
