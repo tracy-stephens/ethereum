@@ -118,12 +118,12 @@ with col1:
     st.markdown(recommendation)
     
 with col2:
-    st.markdown('**Current Prediction** (blue dotted line), **Compared to Last Block Average** (green dotted line)')
-    st.markdown('Green histogram illustrates data underlying green dotted line')
+    st.markdown('**Current Prediction Compared to Last Block Average** (blue vs green dotted line)')
+    st.markdown('Histograms illustrate data underlying dotted lines')
     st.plotly_chart(current_cht)
     st.markdown('**Surge Index**')
     st.plotly_chart(surge_cht)
-    st.markdown('**Percent of Transactions Per Block Requiring Additional Gas Tip Payment to Be Included**')
+    st.markdown('**Percent of Transactions Per Block in Last Hour Requiring Additional Gas Tip Payment to Be Included**')
     st.plotly_chart(pct_tip_chart(data["transactions"][:50000]))    
     
 
