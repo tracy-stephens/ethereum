@@ -43,7 +43,7 @@ def main():
         # 100 blocks ago to 5 blocks ago percentage changes
         df_merge[col+'_pct_chg_last_100_to_5'] = df_merge[col].shift(5)/df_merge[col].shift(100)-1
 
-    #df_merge = df_merge[:-100] # only want those 100 most recent which have complete percents
+    df_merge = df_merge[100:] # trim 100 oldest which will ba NaN due to division by 0
 
     # datetime dummy variables
     df_merge['local_date'] = pd.to_datetime(df_merge['block_timestamp']).dt.tz_localize('utc').dt.tz_convert('US/Eastern')
