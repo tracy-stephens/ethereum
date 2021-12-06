@@ -124,7 +124,7 @@ with col2:
     st.markdown('**Surge Index**')
     st.plotly_chart(surge_cht)
     st.markdown('**Percent of Transactions Per Block Requiring Additional Gas Tip Payment to Be Included**')
-    st.plotly_chart(pct_tip_chart(data["transactions"]))    
+    st.plotly_chart(pct_tip_chart(data["transactions"][:50000]))    
     
 
 
