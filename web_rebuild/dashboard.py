@@ -144,6 +144,8 @@ def gas_hist(df):
         'yaxis_title' : "Number of Recent Blocks",
         'margin_t': 20
     })
+    fig.update_xaxes(range=[0, 400000000000])
+
     #fig.update_layout(showlegend=False)
     
     return fig
