@@ -115,7 +115,7 @@ if menu == 'Time Patterns':
 if menu == 'Recent Transactions':
     st.markdown('**Percent of Transactions Per Block in Last Hour Which Were Smart Contracts**')
     st.plotly_chart(contract_cht)
-    st.markdown('**Percent of Transactions Per Block in Last Hour Requiring Additional Gas Tip Payment to Be Included**')
+    st.markdown('**Percent of Transactions Per Block in Last Hour Requiring Additional Gas Tip Payment to Be Included in Block**')
     st.plotly_chart(tip_cht)
 
  

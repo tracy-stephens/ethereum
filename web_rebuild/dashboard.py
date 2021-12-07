@@ -223,8 +223,7 @@ def pct_smart_contract_chart(df):
     chart_df = get_pct_smart_contract(df)
     fig = px.area(
         chart_df.rolling(5).mean(), 
-        height=400,
-        width=1000,
+        height=350,
         #title='% Smart Contracts'
         labels={
             "value": "Percent Smart Contracts",
