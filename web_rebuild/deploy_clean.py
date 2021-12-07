@@ -8,7 +8,10 @@ from dashboard import (
     surge_chart,
     surge_index,
     gas_hist,
-    pct_tip_chart
+    pct_tip_chart,
+    minute_of_day_chart,
+    minute_of_hour_chart,
+    pct_smart_contract_chart
 )
 from datetime import datetime
 import time
@@ -116,15 +119,16 @@ with col1:
     st.markdown('**Current predicted gas price:**')
     st.markdown(circle, unsafe_allow_html = True)
     st.markdown(recommendation)
+    st.plotly_chart(current_cht)
+    st.plotly_chart(minute_of_day_chart(data["blocks"]))
+    st.plotly_chart(minute_of_hour_chart(data["blocks"]))
+    st.plotly_chart(pct_smart_contract_chart(data["transactions"]))
+    st.plotly_chart(pct_tip_chart(data["transactions"]))
     
 with col2:
-    st.markdown('**Current Prediction Compared to Last Block Average** (blue vs green dotted line)')
-    st.markdown('Histograms illustrate data underlying dotted lines')
-    st.plotly_chart(current_cht)
     st.markdown('**Surge Index**')
     st.plotly_chart(surge_cht)
-    st.markdown('**Percent of Transactions Per Block in Last Hour Requiring Additional Gas Tip Payment to Be Included**')
-    st.plotly_chart(pct_tip_chart(data["transactions"][:50000]))    
+    
     
 
 
