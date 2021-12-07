@@ -22,7 +22,7 @@ def main():
         xgb = pickle.load(xgbm)
 
     # load data
-    #df = pd.read_csv(blocks)
+    df = pd.read_csv(blocks)
     df2 = pd.read_csv(transactions)
     #df_history = st.cache(pd.read_csv)("history.csv")
 
