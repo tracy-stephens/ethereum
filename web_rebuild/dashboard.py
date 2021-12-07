@@ -94,6 +94,11 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
             'Predicted Gas Price' : 'gray',
             'Realized Gas Price' : 'black'
         },
+        labels={
+            "Time": "Block (timestamp)",
+            "Value": "Gas Price Surge Multiple",
+            'Name' : ''
+        },
         line_dash='Name'
     )
     fig.add_hrect(
@@ -139,14 +144,17 @@ def gas_hist(df):
         color="Name", 
         opacity=0.1,
         nbins=30,
-        height=500,
-        width=1000,
+        height=350,
         color_discrete_map={
-            'Predicted Gas Price' : 'green',
-            'Realized Gas Price' : 'blue'
+            'Predicted Gas Price' : 'blue',
+            'Realized Gas Price' : 'green'
+        },
+        labels={
+            "Value": "Effective Gas Price",
+            "Name": "",
         },
         #marginal="violin",
-        title="Current Prediction"
+        #title="Current Prediction"
     )
     fig.add_vline(
         x=chart_df[-1:][('Realized Gas Price', )][0], 
@@ -168,8 +176,11 @@ def gas_hist(df):
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-        #'margin_t': 20
+        'yaxis_title' : "Number of Recent Blocks",
+        'margin_t': 20
     })
+    fig.update_xaxes(range=[0, 400000000000])
+
     #fig.update_layout(showlegend=False)
     
     return fig
@@ -183,13 +194,17 @@ def pct_tip_chart(df):
     has_tip_pct = has_tip[True] / (has_tip.sum(1))
     fig = px.area(
         has_tip_pct.rolling(5).mean(), 
-        height=400,
-        width=1000,
-        title='% of Included Transactions With Tip by Block'
+        height=350,
+        #title='% of Included Transactions With Tip by Block'
+        labels={
+            "value": "Percent Requiring Tip",
+            "block_timestamp": "Block (timestamp)",
+        },
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
         'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+        'margin_t': 20
     })
     fig.update_layout(showlegend=False)
     return fig
@@ -210,7 +225,11 @@ def pct_smart_contract_chart(df):
         chart_df.rolling(5).mean(), 
         height=400,
         width=1000,
-        title='% Smart Contracts'
+        #title='% Smart Contracts'
+        labels={
+            "value": "Percent Smart Contracts",
+            "block_timestamp": "Block (timestamp)",
+        },
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
@@ -241,9 +260,14 @@ def minute_of_day_chart(df, stoplight_thresh = [1.5, 2]):
     bspg_data = get_bspg_by_minute(surge_index(df))
     fig = px.line(
         bspg_data,
-        title='Surge by Time of Day',
+        #title='Surge by Time of Day',
         height=350,
         #width=1000
+        labels={
+            "value": "Gas Price Surge Multiple",
+            "minute_time": "Hour of the Day",
+            "variable": "",
+        },
     )
     fig.add_hrect(
         y0=1,
@@ -271,6 +295,7 @@ def minute_of_day_chart(df, stoplight_thresh = [1.5, 2]):
         'paper_bgcolor': 'rgba(0, 0, 0, 0)',
         'margin_t': 20,
     })
+
     return fig
 
 
@@ -291,9 +316,14 @@ def minute_of_hour_chart(df, stoplight_thresh = [1.5, 2]):
     bspg_data = get_bspg_over_hour(surge_index(df))
     fig = px.line(
         bspg_data,
-        title='Surge by Minute of Hour',
+        #title='Surge by Minute of Hour',
         height=350,
         #width=500
+        labels={
+            "value": "Gas Price Surge Multiple",
+            "minute": "Minute of the Hour",
+            "variable": "",
+        },
     )
     fig.add_hrect(
         y0=1,

@@ -92,22 +92,30 @@ st.sidebar.markdown('Ethereum Stoplight applies machine learning to gigabytes an
 if menu == 'Stoplight':
     col1, col2 = st.columns([1,2])
     with col1:
-        st.markdown('**Current predicted gas price:**')
+        st.markdown('**Current Predicted Gas Price:**')
         st.markdown(stoplight_markdown , unsafe_allow_html = True)
         st.markdown(recommendation)
 
     with col2:
         st.markdown('**Surge Index**')
         st.plotly_chart(surge_cht)
-    
+
+    st.markdown('**Current Prediction Compared to Last Block Average** (blue vs green dotted line)')
+    st.markdown('Histograms illustrate data underlying dotted lines (high outliers may drive Last Block Average dotted line off-center)')    
     st.plotly_chart(current_cht)
         
 if menu == 'Time Patterns':
+    st.markdown('**Surge History: Surge Patterns by Time of Day**')
+    st.markdown('More Surges and Greater Gas Price Variability During Eastern U.S. Business Hours') 
     st.plotly_chart(minute_day_cht)
+    st.markdown('**Surge History: Surge Patterns by Minute of the Hour**')
+    st.markdown('Highest Surges Observed at Beginning and End of the Hour and More Surges at Beginning of the Hour') 
     st.plotly_chart(minute_hour_cht)
 
 if menu == 'Recent Transactions':
+    st.markdown('**Percent of Transactions Per Block in Last Hour Which Were Smart Contracts**')
     st.plotly_chart(contract_cht)
+    st.markdown('**Percent of Transactions Per Block in Last Hour Requiring Additional Gas Tip Payment to Be Included**')
     st.plotly_chart(tip_cht)
 
  
