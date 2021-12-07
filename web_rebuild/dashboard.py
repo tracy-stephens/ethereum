@@ -20,7 +20,6 @@ def clean_dates(data, tz="US/Eastern"):
 
 def clean_predicted(df):
     
-    print(df.head())
     preds_df = df.copy().sort_index().resample('s').ffill()
     preds_df = pd.concat([
         
@@ -60,12 +59,7 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
         #title='Surge Index',
         color_discrete_map={
             'Predicted Gas Price' : 'gray',
-            'Realized Gas Price' : 'black',
-        },
-        labels={
-            "Time": "Block (timestamp)",
-            "Value": "Gas Price Surge Multiple",
-            'Name' : ''
+            'Realized Gas Price' : 'black'
         },
         line_dash='Name'
     )
@@ -109,19 +103,17 @@ def gas_hist(df):
     fig = px.histogram(
         df, 
         x="Value", 
-        #color="Name", 
-        height=350,
+        color="Name", 
         opacity=0.1,
         nbins=30,
+        height=500,
+        width=1000,
         color_discrete_map={
-            'Predicted Gas Price' : 'blue',
-            'Realized Gas Price' : 'green'
-        },
-        labels={
-            "Value": "Effective Gas Price",
+            'Predicted Gas Price' : 'green',
+            'Realized Gas Price' : 'blue'
         },
         #marginal="violin",
-        #title="Current Prediction"
+        title="Current Prediction"
     )
     fig.add_vline(
         x=chart_df[-1:][('Realized Gas Price', )][0], 
@@ -129,7 +121,8 @@ def gas_hist(df):
         line_color='green',
         annotation_text="Last Block Avg.",
         annotation_position="bottom right",
-        annotation_font_color="green"
+        annotation_font_color="green",
+        annotation_font_size=16
     )
     fig.add_vline(
         x=chart_df[-1:][('Predicted Gas Price', )][0], 
@@ -137,15 +130,13 @@ def gas_hist(df):
         line_color='blue',
         annotation_text="+1min Prediction",
         annotation_position="top right",
-        annotation_font_color="blue"
+        annotation_font_color="blue",
+        annotation_font_size=16,
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
-        'yaxis_title' : "Number of Recent Blocks",
-        'margin_t': 20
+        #'margin_t': 20
     })
-    fig.update_xaxes(range=[0, 400000000000])
-
     #fig.update_layout(showlegend=False)
     
     return fig
@@ -159,13 +150,142 @@ def pct_tip_chart(df):
     has_tip_pct = has_tip[True] / (has_tip.sum(1))
     fig = px.area(
         has_tip_pct.rolling(5).mean(), 
-        height=350,
-        #title='% of Included Transactions With Tip by Block'
+        height=400,
+        width=1000,
+        title='% of Included Transactions With Tip by Block'
     )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
         'paper_bgcolor': 'rgba(0, 0, 0, 0)',
-        'margin_t': 20
     })
     fig.update_layout(showlegend=False)
+    return fig
+
+
+def get_pct_smart_contract(df):
+    counts = df.copy().groupby(
+        by=[df['block_timestamp'], df['receipt_gas_used'] > 21000]
+    ).count()
+    counts_df = counts['receipt_gas_used'].unstack()
+    counts_df['pct_smart_contract'] = counts_df[True] / counts_df.sum(1)
+    return counts_df['pct_smart_contract']
+
+
+def pct_smart_contract_chart(df):
+    chart_df = get_pct_smart_contract(df)
+    fig = px.area(
+        chart_df.rolling(5).mean(), 
+        height=400,
+        width=1000,
+        title='% Smart Contracts'
+    )
+    fig.update_layout({
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+    })
+    fig.update_layout(showlegend=False)
+    return fig
+
+
+def get_bspg_by_minute(df):
+    blocks = df.copy()
+    
+    blocks['hour'] = blocks.index.hour
+    blocks['minute_time'] = blocks.index.floor('Min').time
+
+    bspg_grouper = blocks[['minute_time', 'hour', 'base_fee_per_gas']].groupby(['minute_time'])
+    bspg_data = pd.DataFrame({
+        "mean" : bspg_grouper.mean()['base_fee_per_gas'],
+        "90th %ile" : bspg_grouper.quantile(0.9)['base_fee_per_gas'],
+        "95th %ile" : bspg_grouper.quantile(0.95)['base_fee_per_gas'],
+        "max" : bspg_grouper.max()['base_fee_per_gas']
+    })
+    bspg_data.index = pd.to_datetime(bspg_data.index, format='%H:%M:%S')
+    return bspg_data
+
+
+def minute_of_day_chart(df, stoplight_thresh = [1.5, 2]):
+    bspg_data = get_bspg_by_minute(surge_index(df))
+    fig = px.line(
+        bspg_data,
+        title='Surge by Time of Day',
+        height=350,
+        #width=1000
+    )
+    fig.add_hrect(
+        y0=1,
+        y1=stoplight_thresh[0],
+        fillcolor="green",
+        opacity=0.1,
+        line_width=0,
+    )
+    fig.add_hrect(
+        y0=stoplight_thresh[0],
+        y1=stoplight_thresh[1],
+        fillcolor="yellow",
+        opacity=0.1,
+        line_width=0,
+    )
+    fig.add_hrect(
+        y0=stoplight_thresh[1],
+        y1=max(bspg_data['max'].max(), 3),
+        fillcolor="red",
+        opacity=0.1,
+        line_width=0,
+    )
+    fig.update_layout({
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+        'margin_t': 20,
+    })
+    return fig
+
+
+def get_bspg_over_hour(df):
+    blocks = df.copy()
+    blocks['minute'] = blocks.index.minute
+    bspg_grouper = blocks[['minute', 'base_fee_per_gas']].groupby(['minute'])
+    bspg_data = pd.DataFrame({
+        "mean" : bspg_grouper.mean()['base_fee_per_gas'],
+        "90th %ile" : bspg_grouper.quantile(0.9)['base_fee_per_gas'],
+        "95th %ile" : bspg_grouper.quantile(0.95)['base_fee_per_gas'],
+        "max" : bspg_grouper.max()['base_fee_per_gas'],
+    })
+    return bspg_data
+
+
+def minute_of_hour_chart(df, stoplight_thresh = [1.5, 2]):
+    bspg_data = get_bspg_over_hour(surge_index(df))
+    fig = px.line(
+        bspg_data,
+        title='Surge by Minute of Hour',
+        height=350,
+        #width=500
+    )
+    fig.add_hrect(
+        y0=1,
+        y1=stoplight_thresh[0],
+        fillcolor="green",
+        opacity=0.1,
+        line_width=0,
+    )
+    fig.add_hrect(
+        y0=stoplight_thresh[0],
+        y1=stoplight_thresh[1],
+        fillcolor="yellow",
+        opacity=0.1,
+        line_width=0,
+    )
+    fig.add_hrect(
+        y0=stoplight_thresh[1],
+        y1=max(bspg_data['max'].max(), 3),
+        fillcolor="red",
+        opacity=0.1,
+        line_width=0,
+    )
+    fig.update_layout({
+        'plot_bgcolor': 'rgba(0, 0, 0, 0)',
+        'paper_bgcolor': 'rgba(0, 0, 0, 0)',
+        'margin_t': 20,
+    })
     return fig
