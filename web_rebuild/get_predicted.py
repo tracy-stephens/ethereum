@@ -10,6 +10,7 @@ import os
 def main():
     # filepath housekeeping
     dir_path = os.path.dirname(os.path.realpath(__file__))
+    print(dir_path)
     rf_final_model = os.path.join(dir_path, 'rf_final_model.pkl')
     xgb_final_model = os.path.join(dir_path, 'xgb_final_model.pkl')
     blocks = os.path.join(dir_path, 'blocks.csv')
