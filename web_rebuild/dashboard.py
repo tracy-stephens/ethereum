@@ -1,7 +1,40 @@
 import numpy as np
 import pandas as pd
 import plotly_express as px
+import streamlit as st
 #import plotly.figure_factory as ff
+
+
+def stoplight(df):
+    last_pred = str(round(df.iloc[-1][1]/1000000000))
+    low = 'rgba(230,242,231)'
+    med = 'rgba(255,255,220)'
+    hi = 'rgba(255,231,233)'
+    
+    thresh_df = surge_index(df.copy())
+    thresh_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
+    thresh_df = thresh_df.unstack().reset_index()
+    thresh_df.columns = ['Name', 'Time', 'Value']
+    thresh = thresh_df['Value'].iloc[-1]
+    
+    if thresh <= 1.5:
+        surge_color = low
+        recommendation = "Stoplight is Green - Transaction fees are currently low."
+    elif thresh > 1.5 and thresh <= 2.0:
+        surge_color = med
+        recommendation = "Stoplight is Yellow - Transaction fees are currently slightly higher than normal."
+    elif thresh > 2.0:
+        surge_color = hi
+        recommendation = "Stoplight is Red - Transaction fees are currently high."
+    
+    # define stoplight
+    circle = '<style>.circle {' + \
+        'width: 200px; height: 200px; line-height: 200px; border:2px solid black; ' + \
+        'margin-left: 20px; border-radius: 50%; font-size: 20px; ' + \
+        'color: #000; text-align: center; background:' + \
+        surge_color + '}</style>' + '<div class="circle">' + last_pred + 'B gwei</div>'
+    
+    return last_pred, recommendation, circle
 
 
 def clean_dates(data, tz="US/Eastern"):
