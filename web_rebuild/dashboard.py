@@ -157,9 +157,9 @@ def gas_hist(df):
         #marginal="violin",
         #title="Current Prediction"
     )
-    print(chart_df.columns)
+
     fig.add_vline(
-        x=chart_df[-1:][('Realized Gas Price', )][0], 
+        x=chart_df[-1:]['Realized Gas Price'][0], 
         line_dash='dash',
         line_color='green',
         annotation_text="Last Block Avg.",
