@@ -47,6 +47,7 @@ def clean_dates(data, tz="US/Eastern"):
         if k != "transactions":
             v.set_index(v['block_timestamp'], inplace=True)
             v.drop(columns='block_timestamp', inplace=True)
+            v = v.sort_index()
     
     return data
 
