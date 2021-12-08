@@ -157,25 +157,25 @@ def gas_hist(df):
         #marginal="violin",
         #title="Current Prediction"
     )
-
-    fig.add_vline(
-        x=chart_df[-1:][('Realized Gas Price', )][0], 
-        line_dash='dash',
-        line_color='green',
-        annotation_text="Last Block Avg.",
-        annotation_position="bottom right",
-        annotation_font_color="green",
-        annotation_font_size=16
-    )
-    fig.add_vline(
-        x=chart_df[-1:][('Predicted Gas Price', )][0], 
-        line_dash='dash', 
-        line_color='blue',
-        annotation_text="+1min Prediction",
-        annotation_position="top right",
-        annotation_font_color="blue",
-        annotation_font_size=16,
-    )
+    print(chart_df.columns)
+    # fig.add_vline(
+    #     x=chart_df[-1:][('Realized Gas Price', )][0], 
+    #     line_dash='dash',
+    #     line_color='green',
+    #     annotation_text="Last Block Avg.",
+    #     annotation_position="bottom right",
+    #     annotation_font_color="green",
+    #     annotation_font_size=16
+    # )
+    # fig.add_vline(
+    #     x=chart_df[-1:][('Predicted Gas Price', )][0], 
+    #     line_dash='dash', 
+    #     line_color='blue',
+    #     annotation_text="+1min Prediction",
+    #     annotation_position="top right",
+    #     annotation_font_color="blue",
+    #     annotation_font_size=16,
+    # )
     fig.update_layout({
         'plot_bgcolor': 'rgba(0, 0, 0, 0)',
         'yaxis_title' : "Number of Recent Blocks",
