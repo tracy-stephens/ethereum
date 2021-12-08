@@ -138,7 +138,7 @@ def gas_hist(df):
     chart_df.columns = [['Realized Gas Price', 'Predicted Gas Price', 'Gas Used']]
     df = chart_df.unstack().reset_index()
     df.columns = ['Name', 'Time', 'Value']
-    
+
     fig = px.histogram(
         df, 
         x="Value", 
@@ -157,6 +157,7 @@ def gas_hist(df):
         #marginal="violin",
         #title="Current Prediction"
     )
+    print(chart_df.columns)
     fig.add_vline(
         x=chart_df[-1:][('Realized Gas Price', )][0], 
         line_dash='dash',
