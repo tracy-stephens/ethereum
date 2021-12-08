@@ -2,8 +2,21 @@ import numpy as np
 import pandas as pd
 import plotly_express as px
 import streamlit as st
+from datetime import datetime
 #import plotly.figure_factory as ff
 
+
+def get_chart_data():
+    day_path = 'chart_data/minute_day.csv'
+    hour_path = 'chart_data/minute_hour.csv'
+    
+    day_df = pd.read_csv(day_path, index_col=0)
+    day_df.index = [datetime.strptime(i, '%H:%M:%S').time() for i in day_df.index]
+    
+    hour_df = pd.read_csv(hour_path, index_col=0)
+
+    return day_df, hour_df
+    
 
 def stoplight(df):
     last_pred = str(round(df.iloc[-1][1]/1000000000))
@@ -40,16 +53,19 @@ def stoplight(df):
 def clean_dates(data, tz="US/Eastern"):
     """ data is a dict of dfs with keys blocks, transactions, and predicted """
     
+    new_data = {}
     for k, v in data.items():
-        v['block_timestamp'] = pd.to_datetime(v['block_timestamp'])
-        v['block_timestamp'] = v['block_timestamp'].dt.tz_localize("UTC").dt.tz_convert(tz)
+        df = v.copy()
+        df['block_timestamp'] = pd.to_datetime(df['block_timestamp'])
+        df['block_timestamp'] = df['block_timestamp'].dt.tz_localize("UTC").dt.tz_convert(tz)
+        new_data[k] = df
 
         if k != "transactions":
-            v.set_index(v['block_timestamp'], inplace=True)
-            v = v.sort_index()
-            v.drop(columns='block_timestamp', inplace=True)
+            new_data[k].set_index(df['block_timestamp'], inplace=True)
+            new_data[k].sort_index(inplace=True)
+            new_data[k].drop(columns='block_timestamp', inplace=True)
 
-    return data
+    return new_data
 
 
 def clean_predicted(df):
@@ -134,8 +150,8 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
 
 def gas_hist(df):
     
-    chart_df = df
-    chart_df.columns = [['Realized Gas Price', 'Predicted Gas Price', 'Gas Used']]
+    chart_df = df.copy()
+    chart_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
     df = chart_df.unstack().reset_index()
     df.columns = ['Name', 'Time', 'Value']
 
@@ -157,6 +173,7 @@ def gas_hist(df):
         #marginal="violin",
         #title="Current Prediction"
     )
+
     fig.add_vline(
         x=chart_df[-1:][('Realized Gas Price', )][0], 
         line_dash='dash',
@@ -252,12 +269,15 @@ def get_bspg_by_minute(df):
         "95th %ile" : bspg_grouper.quantile(0.95)['base_fee_per_gas'],
         "max" : bspg_grouper.max()['base_fee_per_gas']
     })
+    
     bspg_data.index = pd.to_datetime(bspg_data.index, format='%H:%M:%S')
+    bspg_data.index = bspg_data.index.floor('Min').time
     return bspg_data
 
 
 def minute_of_day_chart(df, stoplight_thresh = [1.5, 2]):
-    bspg_data = get_bspg_by_minute(surge_index(df))
+    bspg_data = df
+    #bspg_data = get_bspg_by_minute(surge_index(df))
     fig = px.line(
         bspg_data,
         #title='Surge by Time of Day',
@@ -285,7 +305,7 @@ def minute_of_day_chart(df, stoplight_thresh = [1.5, 2]):
     )
     fig.add_hrect(
         y0=stoplight_thresh[1],
-        y1=max(bspg_data['max'].max(), 3),
+        y1=max(df['max'].max(), 3),
         fillcolor="red",
         opacity=0.1,
         line_width=0,
@@ -313,9 +333,10 @@ def get_bspg_over_hour(df):
 
 
 def minute_of_hour_chart(df, stoplight_thresh = [1.5, 2]):
-    bspg_data = get_bspg_over_hour(surge_index(df))
+    bspg_data = df
+    #bspg_data = get_bspg_over_hour(surge_index(df))
     fig = px.line(
-        bspg_data,
+        df,
         #title='Surge by Minute of Hour',
         height=350,
         #width=500
@@ -341,7 +362,7 @@ def minute_of_hour_chart(df, stoplight_thresh = [1.5, 2]):
     )
     fig.add_hrect(
         y0=stoplight_thresh[1],
-        y1=max(bspg_data['max'].max(), 3),
+        y1=max(df['max'].max(), 3),
         fillcolor="red",
         opacity=0.1,
         line_width=0,
