@@ -48,7 +48,7 @@ def clean_dates(data, tz="US/Eastern"):
             v.set_index(v['block_timestamp'], inplace=True)
             v = v.sort_index()
             v.drop(columns='block_timestamp', inplace=True)
-    
+
     return data
 
 
@@ -135,7 +135,7 @@ def surge_chart(df, stoplight_thresh = [1.5, 2]):
 def gas_hist(df):
     
     chart_df = df
-    chart_df.columns = [['Realized Gas Price', 'Predicted Gas Price']]
+    chart_df.columns = [['Realized Gas Price', 'Predicted Gas Price', 'Gas Used']]
     df = chart_df.unstack().reset_index()
     df.columns = ['Name', 'Time', 'Value']
     
