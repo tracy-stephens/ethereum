@@ -159,7 +159,7 @@ def gas_hist(df):
     )
 
     fig.add_vline(
-        x=chart_df[-1:]['Realized Gas Price'][0], 
+        x=chart_df[-1:][('Realized Gas Price', )][0], 
         line_dash='dash',
         line_color='green',
         annotation_text="Last Block Avg.",
