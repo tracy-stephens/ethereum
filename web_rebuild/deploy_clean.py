@@ -114,7 +114,7 @@ if menu == 'Stoplight':
         
 if menu == 'Time Patterns':
     st.markdown('**Surge History: Surge Patterns by Time of Day**')
-    st.markdown('More Surges and Greater Gas Price Variability During Eastern U.S. Business Hours') 
+    st.markdown('A Significant Persistent Surge Occurs Daily at Midnight EST. We Hypothesize These Are Due to Smart Contract Programming\ Surges and Spikes Also Tend to Form in the EST Evening\ Standard Gas Price Variability Can Be Observed During EST Business Hours.\ Gas Prices Tend to Be Low During Early Morning Hours EST.') 
     st.plotly_chart(minute_day_cht)
     st.markdown('**Surge History: Surge Patterns by Minute of the Hour**')
     st.markdown('Highest Surges Observed at Beginning and End of the Hour and More Surges at Beginning of the Hour') 
